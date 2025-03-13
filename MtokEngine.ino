@@ -2,7 +2,8 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
-
+#include <iostream>
+#include <algorithm>
 
 #define OLED_MOSI     23
 #define OLED_CLK      18
@@ -39,7 +40,7 @@ struct Point {
 };
 
 int button1, button2; // input
-class GameObject{ // 192 bytes size, so I can only have one object?
+class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino be like
 
     public:
     String name = "object1";
@@ -60,17 +61,22 @@ class GameObject{ // 192 bytes size, so I can only have one object?
     Point r_corners[8];// the position of each point ON screen
 
     float collisions[6] = {// hitbox
-        0.5, -0.5, 0.5, -0.5, 0.5, -0.5 // x x   y y   z z  (ranges) (colliders are all cuboids)
+        1, -1, 1, -1, 1, -1 // x x   y y   z z  (ranges) (colliders are all cuboids)
     };
 
 
 
 
 
-    void move(float x, float y, float z){ // moves the object by x y z
+    void move(float x, float y, float z){ // moves the object by x y z using 3 floats as input
         position.x += x;
         position.y += y;
         position.z += z;
+    }
+    void moveP(Point point){ // moves the object by x y z using points as input
+        position.x += point.x;
+        position.y += point.y;
+        position.z += point.z;
     }
 
     void setPosition(float x, float y, float z){ // moves the object by x y z
@@ -81,7 +87,7 @@ class GameObject{ // 192 bytes size, so I can only have one object?
 
     
     // collision related functions
-    float calculateCollision(GameObject object) {
+    Point calculateCollision(GameObject object) { // spagetti
         float posX = position.x;
         float posY = position.y;
         float posZ = position.z;
@@ -99,16 +105,33 @@ class GameObject{ // 192 bytes size, so I can only have one object?
         float objFront = object.collisions[4] + object.position.z;
         float objBack = object.collisions[5] + object.position.z;
 
-        Serial.println(String(objLeft) + ">" +  String(right)  + " " + String(objRight) + "<" +  String(left));
 
-        bool xCol = (objLeft > right) & (objRight < left);
-        bool yCol = (objTop < bottom) & (objBottom > top);
-        bool zCol = (objFront < back) & (objBack > front);
+        bool xCol = (objLeft >= left && left >= objRight) || (objLeft >= right && right >= objRight);
+        bool yCol = (objTop >= top && top >= objBottom) || (objTop >= bottom && bottom >= objBottom);
+        bool zCol = (objFront >= back && back >= objBack) || (objFront >= front && front >= objBack);
         //Serial.println(String(xCol) + " " +  String(yCol)  + " " + String(zCol));
         if(xCol && yCol && zCol){
-            Serial.println("COLLISION!!");
+            Serial.println("COLLISION!!");            
+            float xMove = std::min((std::abs(right - objLeft)), (std::abs(left - objRight)));
+            float yMove = std::min((std::abs(bottom - objTop)), (std::abs(top - objBottom)));
+            float zMove = std::min((std::abs(back - objFront)), (std::abs(front - objBack)));
+            
+            float min = std::min(xMove, std::min(yMove, zMove));
+
+            if(xMove == min) return {selectDistanceBetweenTwoPoints(right, objLeft, left, objRight), 0, 0};
+            if(yMove == min) return {0, selectDistanceBetweenTwoPoints(bottom, objTop, top, objBottom), 0};
+            if(zMove == min) return {0, 0, selectDistanceBetweenTwoPoints(back, objFront, front, objBack)}; 
+            
+            return {xMove, 0, 0};
         }
-        return 0.0;
+        return {0,0,0};
+    }
+        
+    float selectDistanceBetweenTwoPoints(float r, float oL, float l, float oR){ // corrected parameter order
+        if(std::abs(r - oL) < std::abs(l - oR)){
+            return r - oL;
+        }
+        return l - oR;
     }
 
 
@@ -169,7 +192,7 @@ void setup(void){
     digitalWrite (19, HIGH);
 
     // temporary
-    object2.setPosition(0.0,0.0,-4.0);
+    object2.setPosition(-3.0,0.0,-4.0);
 }
 
 
@@ -193,7 +216,7 @@ void renderLoop(){
 
     object.render();
 
-    object.calculateCollision(object2);
+    object.moveP(object.calculateCollision(object2));
 
     object2.calculateSC();
 
