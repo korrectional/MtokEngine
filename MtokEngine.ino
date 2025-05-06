@@ -22,17 +22,11 @@
 
 
 
-
-
 void setup(void){
     RenderSetup();
     InputSetup();
+    userStart();
 }
-
-
-
-
-
 
 
 
@@ -40,8 +34,11 @@ void setup(void){
 void loop(void){
     InputLoop();
     gameLoop();
-    ClearDisplay();
-    GameObjectRenderLoop();
-    Display();
+    if(playing) { // clearing, display and such are all handled by the game's built in UI features
+        ClearDisplay(); // so in practice, playing means that the 3d renderer is running
+        GameObjectRenderLoop();
+        RenderUI();
+        Display();
+    }
     delay(8);
 }

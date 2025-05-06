@@ -14,11 +14,10 @@
 
 
 
-
 class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino be like
 
     public:
-    String name = "object1";
+    String name = "player";
 
     Point position = { 0, 0, -4 };
 
@@ -45,11 +44,13 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
 
 
     void move(float x, float y, float z){ // moves the object by x y z using 3 floats as input
+        if(staticObject) return;
         position.x += x;
         position.y += y;
         position.z += z;
     }
     void moveP(Point point){ // moves the object by x y z using points as input
+        if(staticObject) return;
         position.x += point.x;
         position.y += point.y;
         position.z += point.z;
@@ -86,7 +87,32 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
         }
     }
 
-    
+    //++++++++++++++++++++++++++++++++++++++++++++++++++COLLISION ENGINE++++++++++++++++++++++++++++++++++++++++++++++++++
+    CollisionCallback collisionCallbacks[10];
+    String collisionCallbacksNames[10];
+    int collisionCallbacksLength = 0;
+
+    void onCollision(GameObject* obj, int initial = 1){
+        if(initial == 0){
+            obj->onCollision(this);
+        }
+        for(int i = 0; i < collisionCallbacksLength; i++){ // execute OnCollisionExecute
+            if(obj->name == collisionCallbacksNames[i]){
+                collisionCallbacks[i]();
+            }
+        }
+    }
+
+    void onCollisionExecute(const String& objName, CollisionCallback callback)
+    {
+        collisionCallbacks[collisionCallbacksLength] = callback;
+        collisionCallbacksNames[collisionCallbacksLength] = objName;
+        collisionCallbacksLength++;
+    }
+
+
+
+
     // collision related functions
     Point calculateCollision(GameObject* object) { // spagetti
         float posX = position.x;
@@ -136,12 +162,11 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
         return l - oR;
     }
 
-
     ///////////// rendering related functions
     void calculateSC(){ // calculate r_corners
         for(int i = 0; i < 8; i++){
-            float x = (corners[i].x + position.x) / (corners[i].z + position.z);
-            float y = (corners[i].y + position.y) / (corners[i].z + position.z);
+            float x = (corners[i].x + position.x) / (corners[i].z + position.z)*pov;
+            float y = (corners[i].y + position.y) / (corners[i].z + position.z)*pov;
             float end_x = (int)((x*64.0+128.0)/2);
             float end_y = (int)((y*64.0+64.0)/2);
             r_corners[i].x = end_x;
@@ -196,7 +221,7 @@ GameObject* instantiate(const String& name = "object"){
     }
 
     GameObject* newObject = new GameObject();
-    newObject->name = name + String(GameObjectCount); // Assign a unique name
+    newObject->name = name;
     GameObjectArray[GameObjectCount++] = newObject; // Add the new object to the array
 
     Serial.println("GameObject created: " + newObject->name);
@@ -235,16 +260,21 @@ void destroy(GameObject* object) {
 }
 
 
-
+bool playing = true;
 void GameObjectRenderLoop(){
 
     for(int i = 0; i < GameObjectCount; i++){
-        if(GameObjectArray[i]->staticObject) break;
         for(int j = (i+1); j < GameObjectCount; j++){
-            GameObjectArray[i]->moveP(GameObjectArray[j]->calculateCollision(GameObjectArray[i]));
+            Point move = GameObjectArray[j]->calculateCollision(GameObjectArray[i]);
+            if(move.x == 0 && move.y == 0 && move.z == 0){
+                continue;    
+            }
+            GameObjectArray[i]->onCollision(GameObjectArray[j], 0);
+            GameObjectArray[i]->moveP(move);
         }
     }
 
+    if(!playing) return;
     for(int i = 0; i < GameObjectCount; i++){
         GameObjectArray[i]->calculateSC();
         GameObjectArray[i]->render();
