@@ -1,3 +1,7 @@
+#ifndef GAMEOBJECT_H
+#define GAMEOBJECT_H
+
+
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -5,21 +9,8 @@
 #include <iostream>
 #include <algorithm>
 #include "DataTypes.h"
+#include "Renderer.h"
 
-
-#ifndef GAMEOBJECT_H
-#define GAMEOBJECT_H
-
-
-#define OLED_MOSI     23
-#define OLED_CLK      18
-#define OLED_DC       16
-#define OLED_CS       5
-#define OLED_RST      17
-
-
-// Create the OLED display
-Adafruit_SH1106G d = Adafruit_SH1106G(128, 64,OLED_MOSI, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
 
 
 
@@ -116,10 +107,11 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
         float objBack = object->collisions[5] + object->position.z;
 
 
-        bool xCol = (objLeft >= left && left >= objRight) || (objLeft >= right && right >= objRight);
-        bool yCol = (objTop >= top && top >= objBottom) || (objTop >= bottom && bottom >= objBottom);
-        bool zCol = (objFront >= back && back >= objBack) || (objFront >= front && front >= objBack);
+        bool xCol = (objLeft >= left && left >= objRight) || (objLeft >= right && right >= objRight) || (left >= objLeft && objLeft >= right) || (left >= objRight && objRight >= right);
+        bool yCol = (objTop >= top && top >= objBottom) || (objTop >= bottom && bottom >= objBottom) || (top >= objTop && objTop >= bottom) || (top >= objBottom && objBottom >= bottom);
+        bool zCol = (objFront >= back && back >= objBack) || (objFront >= front && front >= objBack) || (back >= objFront && objFront >= front) || (back >= objBack && objBack >= front);
         //Serial.println(String(xCol) + " " +  String(yCol)  + " " + String(zCol));
+
         if(xCol && yCol && zCol){
             //Serial.println("COLLISION!!");
             float xMove = std::min((std::abs(right - objLeft)), (std::abs(left - objRight)));
@@ -240,6 +232,23 @@ void destroy(GameObject* object) {
         }
     }
     Serial.println("Error: GameObject not found!");
+}
+
+
+
+void GameObjectRenderLoop(){
+
+    for(int i = 0; i < GameObjectCount; i++){
+        if(GameObjectArray[i]->staticObject) break;
+        for(int j = (i+1); j < GameObjectCount; j++){
+            GameObjectArray[i]->moveP(GameObjectArray[j]->calculateCollision(GameObjectArray[i]));
+        }
+    }
+
+    for(int i = 0; i < GameObjectCount; i++){
+        GameObjectArray[i]->calculateSC();
+        GameObjectArray[i]->render();
+    }
 }
 
 
