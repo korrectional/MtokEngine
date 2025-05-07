@@ -66,7 +66,7 @@ void setRenderUIFunc(void (*function)(), bool *when){
     renderUIwhen = when;
 }
 void RenderUI(){
-    if(renderUI && renderUIwhen){
+    if(renderUI && renderUIwhen && *renderUIwhen){
         renderUI();
     }
 }

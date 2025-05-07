@@ -19,33 +19,16 @@ float randomVal(){
     return (float)rand() / RAND_MAX;
 }
 
-
+int overlayMovement = 0;
 void showOverlay();
-
-void userStart(){
-    player->setPosition(0.0,-1.5,-6.0);
-    player->scaleObject(0.6,0.5,0.5);
-
-
-    rock1->setPosition(-1,-1.5,-50);
-    rock2->setPosition(0,-1.5,-50);
-    rock3->setPosition(1,-1.5,-50);
-    rocks[0]->scaleObject((randomVal()*0.3)+0.4, (randomVal()*0.3)+0.4, (randomVal()*0.3)+0.4);
-    rocks[1]->scaleObject((randomVal()*0.3)+0.4, (randomVal()*0.3)+0.4, (randomVal()*0.3)+0.4);
-    rocks[2]->scaleObject((randomVal()*0.3)+0.4, (randomVal()*0.3)+0.4, (randomVal()*0.3)+0.4);
-    onCollisions();
-    srand(time(0));
-    setRenderUIFunc(showOverlay, playing);
-}
-
-
 bool gameover = false;
 bool r1move = true;
 bool r2move = false;
 bool r3move = false;
 
-void restart(){
-    ClearDisplay();
+
+
+void setupGame(){
     playing = true;
     gameover = false;
     player->setPosition(0.0,-1.5,-6.0);
@@ -61,7 +44,23 @@ void restart(){
     r3move = false;
 }
 
+void userStart(){
+    setupGame();
+    onCollisions();
+    srand(time(0));
+    setRenderUIFunc(showOverlay, &playing);
+}
 
+
+
+void restart(){
+    ClearDisplay();
+    playing = true;
+    gameover = false;
+    setupGame();
+}
+
+bool UIenabled = true;
 void gameLoop(){
     if(playing){
         if (button1 == HIGH && player->position.x < 5) player->move(0.1, 0, 0); // Move object based on input
@@ -81,6 +80,9 @@ void gameLoop(){
         overlayMovement++;
     }
     else if(gameover){
+        if(button1==HIGH){
+            UIenabled=!UIenabled;
+        }
         if(button2==HIGH){
             restart();
         }
@@ -88,26 +90,34 @@ void gameLoop(){
 }
 
 
-void jump(){
+void loss(){
     playing = false;
     gameover = true;
     ClearDisplay(); // display gameover
-    Write(15, 1, 2.5, "GAME OVER");
-    Write(0, 50, 0.9, "Press right to restart");
+    Write(11, 15, 2.5, "GAME OVER");
+    Write(0, 43, 1, "R to restart\nL to disable UI");
     Display();
+    delay(800);
 }
 void onCollisions(){ // set what happens when x object collides with object y
-    player->onCollisionExecute("rock", jump);
+    player->onCollisionExecute("rock", loss);
 }
 
 
-int overlayMovement = 0;
 void showOverlay(){
-    for(int i = 0; i < 128; i++){
-        if(!((i+overlayMovement)%6)){
-            DrawPixel(i, 0, 1);
+    if(!UIenabled) return;
+    for(int i = 0; i < 64; i++){
+        if(((i+(int)(overlayMovement/10))%20 > 3)){
+            DrawPixel(0, i, 1);
+        }
+    }
+    for(int i = 0; i < 64; i++){
+        if(((i+(int)((200-overlayMovement)/10))%20 > 3)){
+            DrawPixel(127, i, 1);
         }
     }
     overlayMovement++;
-    if(overlayMovement>5) overlayMovement = 0;
+    if(overlayMovement>200) overlayMovement = 0;
+
+    Write(2, 1, 1, "AstroBelt");
 }
