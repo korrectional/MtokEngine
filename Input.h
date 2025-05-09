@@ -4,7 +4,7 @@
 
 
 
-#include <SPI.h> // ignore these errors !!!
+#include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>

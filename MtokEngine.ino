@@ -1,4 +1,4 @@
-#include <SPI.h> // ignore these errors !!!
+#include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
@@ -7,7 +7,8 @@
 #include "GameObject.h"
 #include "DataTypes.h"
 #include "Input.h"
-#include "userScipt.h"
+#include "GameManager.h"
+#include "U_AstroBelt.h"
 
 
 
@@ -25,7 +26,7 @@
 void setup(void){
     RenderSetup();
     InputSetup();
-    userStart();
+    GameManager_start();
 }
 
 
@@ -33,7 +34,7 @@ void setup(void){
 
 void loop(void){
     InputLoop();
-    gameLoop();
+    GameManager_loop();
     if(playing) { // clearing, display and such are all handled by the game's built in UI features
         ClearDisplay(); // so in practice, playing means that the 3d renderer is running
         GameObjectRenderLoop();
