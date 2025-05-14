@@ -43,6 +43,10 @@ void AstroBelt_setupGame() {
 }
 
 void AstroBelt_userStart() {
+    AstroBelt_player->enable();
+    AstroBelt_rock1 ->enable();
+    AstroBelt_rock2 ->enable();
+    AstroBelt_rock3 ->enable();
     AstroBelt_setupGame();
     AstroBelt_onCollisions();
     srand(time(0));

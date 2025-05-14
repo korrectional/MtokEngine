@@ -18,6 +18,7 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
 
     public:
     String name = "player";
+    bool enabled = true;
 
     Point position = { 0, 0, -4 };
 
@@ -85,6 +86,10 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
         for (int i = 0; i < 6; i++) {
             Serial.println("collisions [" + String(i) + "] == " + String(collisions[i]));
         }
+    }
+
+    void enable(){
+        enabled = true;
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++COLLISION ENGINE++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -202,13 +207,14 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
         drawLine(1, 0);
     }
 
+
 };
 ///////////////////////////////////////////////////////////////////////////////
 
 
 
 
-#define MAX_GAMEOBJECTS 50
+#define MAX_GAMEOBJECTS 100
 GameObject* GameObjectArray[MAX_GAMEOBJECTS];
 int GameObjectCount = 0;
 
@@ -264,7 +270,9 @@ bool playing = true;
 void GameObjectRenderLoop(){
 
     for(int i = 0; i < GameObjectCount; i++){
+        if(!GameObjectArray[i]->enabled) continue; // if disabled then just
         for(int j = (i+1); j < GameObjectCount; j++){
+            if(!GameObjectArray[j]->enabled) continue; // skip it
             Point move = GameObjectArray[j]->calculateCollision(GameObjectArray[i]);
             if(move.x == 0 && move.y == 0 && move.z == 0){
                 continue;    
@@ -276,6 +284,7 @@ void GameObjectRenderLoop(){
 
     if(!playing) return;
     for(int i = 0; i < GameObjectCount; i++){
+        if(!GameObjectArray[i]->enabled) continue;
         GameObjectArray[i]->calculateSC();
         GameObjectArray[i]->render();
     }

@@ -10,6 +10,7 @@
 #include "DataTypes.h"
 #include "Input.h"
 #include "U_AstroBelt.h"
+#include "U_Tetris.h"
 
 
 void (*currentGameLoop)();
@@ -17,6 +18,9 @@ void GameManager_showOverlay();
 
 void GameManager_start(){
     setRenderUIFunc(GameManager_showOverlay, &playing);
+    for(int i = 0; i < GameObjectCount; i++){ // I wasnt able to allocate memory for game objects dynamically so we
+        GameObjectArray[i]->enabled = false;  // simply do it on compile time and just disable them at the start
+    }
 }
 
 void GameManager_loop(){
@@ -27,6 +31,10 @@ void GameManager_loop(){
     if(button1 == HIGH){
         currentGameLoop = AstroBelt_gameLoop;
         AstroBelt_userStart();
+    }
+    if(button2 == HIGH){
+        currentGameLoop = Tetris_gameLoop;
+        Tetris_userStart();
     }
 }
 
@@ -47,6 +55,7 @@ void GameManager_showOverlay() {
     if (GameManager_overlayMovement > 200) GameManager_overlayMovement = 0;
 
     Write(2, 1, 1, "GameManager");
+    Write(2, 20, 1.5, "L to launch AstroBelt\nR to launch Tetris");
 }
 
 
