@@ -10,7 +10,7 @@
 #include "DataTypes.h"
 #include "Input.h"
 #include "U_AstroBelt.h"
-#include "U_Tetris.h"
+#include "U_Tetromino.h"
 
 
 void (*currentGameLoop)();
@@ -55,7 +55,8 @@ void GameManager_showOverlay() {
     if (GameManager_overlayMovement > 200) GameManager_overlayMovement = 0;
 
     Write(2, 1, 1, "GameManager");
-    Write(2, 20, 1.5, "L to launch AstroBelt\nR to launch Tetris");
+    Write(2, 20, 1.5, "L to launch AstroBelt");
+    Write(2, 30, 1.5, "R to launch Tetromino");
 }
 
 

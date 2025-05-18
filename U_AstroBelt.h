@@ -43,6 +43,7 @@ void AstroBelt_setupGame() {
 }
 
 void AstroBelt_userStart() {
+    pov = 2;
     AstroBelt_player->enable();
     AstroBelt_rock1 ->enable();
     AstroBelt_rock2 ->enable();

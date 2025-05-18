@@ -61,7 +61,7 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
         position.x = x;
         position.y = y;
         position.z = z;
-        Serial.println("Position set to: (" + String(x) + ", " + String(y) + ", " + String(z) + ")");
+        //Serial.println("Position set to: (" + String(x) + ", " + String(y) + ", " + String(z) + ")");
     }
 
     void scaleObject(float x, float y, float z) {
@@ -82,7 +82,7 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
         collisions[4] = z;
         collisions[5] = -z; 
     
-        Serial.println("Scale updated to: (" + String(x) + ", " + String(y) + ", " + String(z) + ")");
+        //Serial.println("Scale updated to: (" + String(x) + ", " + String(y) + ", " + String(z) + ")");
         for (int i = 0; i < 6; i++) {
             Serial.println("collisions [" + String(i) + "] == " + String(collisions[i]));
         }
