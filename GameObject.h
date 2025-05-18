@@ -11,7 +11,7 @@
 #include "DataTypes.h"
 #include "Renderer.h"
 
-
+int GameRotation = 0;
 
 
 class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino be like
@@ -172,8 +172,16 @@ class GameObject{ // 192 bytes size, so I can only have one object? Lol arduino 
         for(int i = 0; i < 8; i++){
             float x = (corners[i].x + position.x) / (corners[i].z + position.z)*pov;
             float y = (corners[i].y + position.y) / (corners[i].z + position.z)*pov;
-            float end_x = (int)((x*64.0+128.0)/2);
-            float end_y = (int)((y*64.0+64.0)/2);
+            float end_x;
+            float end_y;
+            if(GameRotation == 0){
+                end_x = (int)((x*64.0+128.0)/2);
+                end_y = (int)((y*64.0+64.0)/2);
+            }
+            else if(GameRotation == 3){
+                end_x = (int)((x*64.0+64.0)/2);
+                end_y = (int)((y*64.0+128.0)/2);
+            }
             r_corners[i].x = end_x;
             r_corners[i].y = end_y;
             //Serial.println(String(end_x) + " " + String(end_y));
